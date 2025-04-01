@@ -22,19 +22,6 @@ RUN apt-get update && \
     apt-get install -y --no-install-recommends build-essential ffmpeg git && \
     rm -rf /var/lib/apt/lists/*
 
-# Clone and install NeMo
-RUN git clone https://github.com/AI4Bharat/NeMo.git /code/NeMo
-WORKDIR /code/NeMo
-RUN git checkout nemo-v2
-
-# Debugging: List files to ensure reinstall.sh exists
-RUN ls -lah /code/NeMo && cat /code/NeMo/reinstall.sh
-
-# Ensure reinstall.sh is executable
-RUN chmod +x reinstall.sh
-
-# Run the script with verbose mode for debugging
-RUN bash -x reinstall.sh
 
 WORKDIR /code
 
