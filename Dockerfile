@@ -25,7 +25,8 @@ RUN apt-get update && \
 RUN git clone https://github.com/AI4Bharat/NeMo.git /code/NeMo
 WORKDIR /code/NeMo
 RUN git checkout nemo-v2
-RUN bash reinstall.sh
+RUN chmod +x /code/NeMo/reinstall.sh && \
+    /bin/bash -c "set -e; ./reinstall.sh"
 WORKDIR /code
 
 # Copy requirements file and install Python dependencies
@@ -38,6 +39,7 @@ COPY . /code
 
 # Start the application
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+
 
 
 
