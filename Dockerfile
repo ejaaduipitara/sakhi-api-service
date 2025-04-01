@@ -22,10 +22,11 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 
 # Clone and install NeMo
-RUN git clone https://github.com/AI4Bharat/NeMo.git && \
-    cd NeMo && \
-    git checkout nemo-v2 && \
-    bash reinstall.sh
+RUN git clone https://github.com/AI4Bharat/NeMo.git /code/NeMo
+WORKDIR /code/NeMo
+RUN git checkout nemo-v2
+RUN bash reinstall.sh
+WORKDIR /code
 
 # Copy requirements file and install Python dependencies
 COPY ./requirements-prod.txt /code/requirements-prod.txt
