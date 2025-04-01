@@ -13,43 +13,59 @@
 
 #---------1 April 2025
 
- FROM continuumio/anaconda3:2023.03-1
- WORKDIR /root
- RUN apt-get update && apt-get install -y curl file
- RUN curl https://sh.rustup.rs -sSf | sh -s -- -y
- ENV PATH=$PATH:/root/.cargo/bin \
-     OPENAI_API_KEY=$OPENAI_API_KEY \
-     LOG_LEVEL=$LOG_LEVEL \
-     BHASHINI_ENDPOINT_URL=$BHASHINI_ENDPOINT_URL \
-     BHASHINI_API_KEY=$BHASHINI_API_KEY \
-     OCI_ENDPOINT_URL=$OCI_ENDPOINT_URL \
-     OCI_REGION_NAME=$OCI_REGION_NAME \
-     OCI_BUCKET_NAME=$OCI_BUCKET_NAME \
-     OCI_SECRET_ACCESS_KEY=$OCI_SECRET_ACCESS_KEY \
-     OCI_ACCESS_KEY_ID=$OCI_ACCESS_KEY_ID \
-     MARQO_URL=$MARQO_URL \
-     SERVICE_ENVIRONMENT=$SERVICE_ENVIRONMENT \
-     TELEMETRY_ENDPOINT_URL=$TELEMETRY_ENDPOINT_URL \
-     TELEMETRY_LOG_ENABLED=$TELEMETRY_LOG_ENABLED
- RUN apt-get update && apt install build-essential --fix-missing -y
- RUN wget --no-check-certificate https://dl.xpdfreader.com/xpdf-tools-linux-4.05.tar.gz &&  \
-     tar -xvf xpdf-tools-linux-4.05.tar.gz && cp xpdf-tools-linux-4.05/bin64/pdftotext /usr/local/bin
- RUN apt-get install ffmpeg -y
- COPY requirements-prod.txt /root/
- RUN pip3 install -r requirements-prod.txt
- COPY ./main.py /root/
- COPY ./query_with_langchain.py /root/
- COPY ./io_processing.py /root/
- COPY ./logger.py /root/
- COPY ./utils.py /root/
- COPY ./telemetry_logger.py /root/
- COPY ./telemetry_middleware.py /root/
- COPY ./config.ini /root/
- COPY ./config_util.py /root/
- COPY ./env_manager.py /root/
- COPY ./llm /root/
- COPY ./storage /root/
- COPY ./translation /root/
- EXPOSE 8000
- COPY script.sh /root/
- ENTRYPOINT ["bash","script.sh"]
+FROM python:3.8.10
+
+WORKDIR /code
+
+# Install system dependencies
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends build-essential ffmpeg git && \
+    rm -rf /var/lib/apt/lists/*
+
+# Clone and install NeMo
+RUN git clone https://github.com/AI4Bharat/NeMo.git /code/NeMo
+WORKDIR /code/NeMo
+RUN git checkout nemo-v2
+
+# Debugging: List files to ensure reinstall.sh exists
+RUN ls -lah /code/NeMo && cat /code/NeMo/reinstall.sh
+
+# Ensure reinstall.sh is executable
+RUN chmod +x reinstall.sh
+
+# Run the script with verbose mode for debugging
+RUN bash -x reinstall.sh
+
+WORKDIR /code
+
+# Copy requirements file and install Python dependencies
+COPY ./requirements-prod.txt /code/requirements-prod.txt
+RUN python -m pip install --upgrade pip
+RUN pip install --no-cache-dir --upgrade -r /code/requirements-prod.txt
+
+# Debugging: Ensure required files exist before copying
+RUN ls -lah /code
+
+# Debugging: Verify build context before copying
+RUN ls -lah /root/
+
+# Copy the application code
+COPY ./main.py /code/
+COPY ./query_with_langchain.py /code/
+COPY ./io_processing.py /code/
+COPY ./logger.py /code/
+COPY ./utils.py /code/
+COPY ./telemetry_logger.py /code/
+COPY ./telemetry_middleware.py /code/
+COPY ./config.ini /code/
+COPY ./config_util.py /code/
+COPY ./env_manager.py /code/
+COPY ./llm /code/
+COPY ./storage /code/
+COPY ./translation /code/
+
+# Debugging: Verify files after copying
+RUN ls -lah /code
+
+# Start the application
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
