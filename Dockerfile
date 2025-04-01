@@ -58,7 +58,7 @@ COPY ./utils.py /code/
 COPY ./telemetry_logger.py /code/
 COPY ./telemetry_middleware.py /code/
 COPY ./config.ini /code/
-COPY ./config_util.py /code/
+#COPY ./config_util.py /code/
 COPY ./env_manager.py /code/
 COPY ./llm /code/
 COPY ./storage /code/
