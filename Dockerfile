@@ -1,21 +1,45 @@
-FROM python:3.8.10
-WORKDIR /code
-RUN apt-get update && \
+#FROM python:3.8.10
+#WORKDIR /code
+#RUN apt-get update && \
     apt-get install -y --no-install-recommends build-essential ffmpeg && \
     rm -rf /var/lib/apt/lists/*
-    
+        
+#COPY ./requirements-prod.txt /code/requirements-prod.txt
+#RUN python -m pip install --upgrade pip
+#RUN pip install --no-cache-dir --upgrade -r /code/requirements-prod.txt
+#COPY . /code
+
+#CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+
+#---------1 April 2025
+FROM python:3.8.10
+
+WORKDIR /code
+
+# Install system dependencies
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends build-essential ffmpeg git && \
+    rm -rf /var/lib/apt/lists/*
+
 # Clone and install NeMo
 RUN git clone https://github.com/AI4Bharat/NeMo.git && \
     cd NeMo && \
     git checkout nemo-v2 && \
     bash reinstall.sh
-    
+
+# Copy requirements file and install Python dependencies
 COPY ./requirements-prod.txt /code/requirements-prod.txt
 RUN python -m pip install --upgrade pip
 RUN pip install --no-cache-dir --upgrade -r /code/requirements-prod.txt
+
+# Copy the application code
 COPY . /code
 
+# Start the application
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+
+
+
 
 
 # FROM continuumio/anaconda3:2023.03-1
