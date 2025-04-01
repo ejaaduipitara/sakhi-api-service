@@ -20,6 +20,13 @@ RUN apt-get update && apt install build-essential --fix-missing -y
 RUN wget --no-check-certificate https://dl.xpdfreader.com/xpdf-tools-linux-4.05.tar.gz &&  \
     tar -xvf xpdf-tools-linux-4.05.tar.gz && cp xpdf-tools-linux-4.05/bin64/pdftotext /usr/local/bin
 RUN apt-get install ffmpeg -y
+
+# Clone and install NeMo
+RUN git clone https://github.com/AI4Bharat/NeMo.git && \
+    cd NeMo && \
+    git checkout nemo-v2 && \
+    bash reinstall.sh
+
 COPY requirements-prod.txt /root/
 RUN pip3 install -r requirements-prod.txt
 COPY ./main.py /root/
