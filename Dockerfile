@@ -54,7 +54,7 @@ COPY ./main.py /code/
 COPY ./query_with_langchain.py /code/
 COPY ./io_processing.py /code/
 COPY ./logger.py /code/
-COPY ./utils.py /code/
+COPY ./utils /code/
 COPY ./telemetry_logger.py /code/
 COPY ./telemetry_middleware.py /code/
 COPY ./config.ini /code/
